@@ -33,7 +33,7 @@ let update message model =
 
     | GameOver _, GameOverScreenMessage msg ->
         match msg with
-        | GameOverScreen.StartGame -> Playing (PlayScreen.init ()), Cmd.none
+        | GameOverScreen.Reset -> Start (StartScreen.init ()), Cmd.none
 
     | _ -> model, Cmd.none // invalid combination
 
@@ -54,11 +54,11 @@ let view model dispatch =
 [<EntryPoint>]
 let main _ =
     let config = {
-        resolution = Windowed (resWidth, 300)
-        clearColour = Some Colour.WhiteSmoke // if set to None, then each draw will layer over the previous. which looks weird.
+        resolution = Windowed (windowWidth, windowHeight)
+        clearColour = Some backgroundColor // if set to None, then each draw will layer over the previous. which looks weird.
         mouseVisible = true
         assetsToLoad = [
-            PipelineFont ("connection", "./content/Connection")   
+            PipelineFont (primaryFontName, primaryFontLocation)   
         ]
     }
 

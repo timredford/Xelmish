@@ -21,10 +21,9 @@ let update message model =
     | GameOver _ -> model, Cmd.none // caught by parent ???
 
 let view model dispatch =
-    let ignore = model.todo
-    let text size = text "connection" size Colour.Black (-0.5, 0.)
-    let textMid = resWidth / 2
+    let centerText size = text primaryFontName size fontForegroundColor (-0.5, 0.)
+    let windowCenter = windowWidth / 2
     [
-        yield text 25. "You're (P)laying!" (textMid, 40)
+        yield centerText messageFontSize "You're (P)laying!" (windowCenter, 40)
         yield onkeydown Keys.P (fun () -> dispatch (GameOver model.todo))
     ]
