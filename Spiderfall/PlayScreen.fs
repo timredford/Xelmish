@@ -16,28 +16,15 @@ type Column = | A | B | C | D | E | F | G
 type Row = | One | Two | Three | Four | Five | Six | Seven 
     with static member List = [One; Two; Three; Four; Five; Six; Seven] 
 
-let rowToInt row =
-    match row with
-    | One -> 1
-    | Two -> 2
-    | Three -> 3
-    | Four -> 4
-    | Five -> 5
-    | Six -> 6
-    | Seven -> 7
-
-let colToInt col =
-    match col with 
-    | A -> 1
-    | B -> 2
-    | C -> 3
-    | D -> 4
-    | E -> 5
-    | F -> 6
-    | G -> 7
-
-
 type Cell = { Col: Column; Row: Row }
+
+let plusOne item = item + 1
+
+let getCoords cell = 
+    let colIdx = Column.List |> List.findIndex (fun c -> c = cell.Col) |> plusOne
+    let rowIdx = Row.List |> List.findIndex (fun r -> r = cell.Row) |> plusOne
+    (colIdx, rowIdx)
+
 type Board = Map<Cell, Piece option>
 
 type Turn = 
@@ -53,7 +40,7 @@ let createRow row pieces =
     let cells = Column.List |> List.map (fun col -> { Col = col; Row = row })
     List.zip cells pieces 
 
-let createBoard =
+let createBoard:Board =
     Row.List 
     |> List.map (fun row -> createRow row (Column.List |> List.map (fun col -> None))) 
     |> Seq.concat
@@ -104,8 +91,11 @@ type Message =
 let update message model =
     match message with
     | DropPiece _-> 
+        
         {model with currentTurn=(nextTurn model)}, Cmd.none
     | GameOver _ -> model, Cmd.none // caught by parent ???
+
+
 
 let toColor piece =
     match piece with
@@ -114,7 +104,7 @@ let toColor piece =
     | None -> Colour.Tan
 
 let makeRect (cell , piece) = 
-    let (c,r) = (colToInt cell.Col, rowToInt cell.Row)
+    let (c,r) = getCoords cell
     let width = 20
     let height = 20
     let y = ( Row.List.Length - r ) * height
