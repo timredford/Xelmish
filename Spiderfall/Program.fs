@@ -26,7 +26,7 @@ let update message model =
 
     | Playing playScreen, PlayScreenMessage msg -> 
         match msg with
-        | PlayScreen.GameOver score -> GameOver (GameOverScreen.init score), Cmd.none
+        | PlayScreen.GameOver score -> GameOver (GameOverScreen.init None), Cmd.none
         | _ -> 
             let newModel, newCommand = PlayScreen.update msg playScreen
             Playing newModel, Cmd.map PlayScreenMessage newCommand

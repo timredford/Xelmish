@@ -5,25 +5,77 @@ open Xelmish.Viewables
 open Elmish
 open Constants
 
+type Player = | Player1 | Player2
+
+type Rank = | Spider
+
+type Piece = Player * Rank
+
+type Column = | A | B | C | D | E | F | G  
+    with static member List = [A;B;C;D;E;F;G;]
+type Row = | One | Two | Three | Four | Five | Six | Seven 
+    with static member List = [One; Two; Three; Four; Five; Six; Seven] 
+type Cell = { Col: Column; Row: Row }
+type Board = Map<Cell, Piece option>
+
+type Turn = 
+    | Player of Player 
+    | GameOverT of Player option
+
 type Model = {
-    todo: string option
+    board : Board
+    currentTurn : Turn
 }
 
-let init () = { todo = None }
+let createRow row pieces =
+    let cells = Column.List |> List.map (fun col -> { Col = col; Row = row })
+    List.zip cells pieces 
+
+let createBoard =
+    Row.List 
+    |> List.map (fun row -> createRow row (Column.List |> List.map (fun col -> None))) 
+    |> Seq.concat
+    |> Map
+    
+let nextTurn model =
+    match model.currentTurn with
+    | Player p -> 
+        match p with
+        | Player1 -> Player Player2
+        | Player2 -> Player Player1
+    | GameOverT _ -> model.currentTurn // no change
+    
+let getPlayerName p = 
+    match p with
+    | Player1 -> "Player 1"
+    | Player2 -> "Player 2"
+
+let init () = { 
+    board = createBoard
+    currentTurn = Player Player1
+}
 
 
 type Message = 
-    | GameOver of string option
+    | DropPiece of Rank * Column
+    | GameOver of Player option
 
 
 let update message model =
     match message with
+    | DropPiece _-> 
+        {model with currentTurn=(nextTurn model)}, Cmd.none
     | GameOver _ -> model, Cmd.none // caught by parent ???
 
 let view model dispatch =
     let centerText size = text primaryFontName size fontForegroundColor (-0.5, 0.)
+    
     let windowCenter = windowWidth / 2
     [
         yield centerText messageFontSize "You're (P)laying!" (windowCenter, 40)
-        yield onkeydown Keys.P (fun () -> dispatch (GameOver model.todo))
+        match model.currentTurn with
+        | Player player -> yield centerText messageFontSize (getPlayerName player) (windowCenter, 60)
+        | GameOverT _ -> yield centerText messageFontSize "GAME OVER" (windowCenter, 60)
+        yield onkeydown Keys.P (fun () -> dispatch (GameOver None))
+        yield onkeydown Keys.U (fun () -> dispatch (DropPiece (Spider, Column.A)))
     ]
