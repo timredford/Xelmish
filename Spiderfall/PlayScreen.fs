@@ -82,17 +82,43 @@ let init () = {
     currentTurn = Player Player1
 }
 
+let getCellToDropTo ((c1,p1),(c2,p2)) =
+    match p1,p2 with
+    | None,Some _ -> Some c1
+    | Some _ ,None -> None
+    | Some _ ,Some _ -> None
+    | None, None -> 
+        match c2 with
+        | {Row=One }-> Some c2
+        | _ -> None
+
+let dropPiece (col, piece) model =
+    let inColumnList = 
+        model.board 
+        |> Map.toList 
+        |> List.where (fun (c,d) -> c.Col = col) 
+        |> List.sortByDescending (fun (c,p) -> getCoords (c) |> snd)
+
+    let firstOccupiedCell =
+        inColumnList 
+        |> List.pairwise 
+        |> List.tryPick (getCellToDropTo) // TODO figure out what to do here
+
+    match firstOccupiedCell with
+    | Some c -> {model with board=model.board.Add(c, Some piece)}
+    | None -> model
 
 type Message = 
-    | DropPiece of Rank * Column
+    | DropPiece of Player * Rank * Column
     | GameOver of Player option
 
 
 let update message model =
     match message with
-    | DropPiece _-> 
-        
-        {model with currentTurn=(nextTurn model)}, Cmd.none
+    | DropPiece (player, rank, col)-> 
+        let piece  = (player, rank)
+        let m = dropPiece (col,piece) model
+        {m with currentTurn=(nextTurn model)}, Cmd.none
     | GameOver _ -> model, Cmd.none // caught by parent ???
 
 
@@ -124,15 +150,16 @@ let view model dispatch =
     [
         yield centerText messageFontSize "You're (P)laying!" (windowCenter, 40)
         match model.currentTurn with
-        | Player player -> yield centerText messageFontSize (getPlayerName player) (windowCenter, 60)
+        | Player player -> 
+            yield centerText messageFontSize (getPlayerName player) (windowCenter, 60)
+            yield onkeydown Keys.A (fun () -> dispatch (DropPiece (player, Spider, Column.A)))
+            yield onkeydown Keys.B (fun () -> dispatch (DropPiece (player, Spider, Column.B)))
+            yield onkeydown Keys.C (fun () -> dispatch (DropPiece (player, Spider, Column.C)))
+            yield onkeydown Keys.D (fun () -> dispatch (DropPiece (player, Spider, Column.D)))
+            yield onkeydown Keys.E (fun () -> dispatch (DropPiece (player, Spider, Column.E)))
+            yield onkeydown Keys.F (fun () -> dispatch (DropPiece (player, Spider, Column.F)))
+            yield onkeydown Keys.G (fun () -> dispatch (DropPiece (player, Spider, Column.G)))
         | GameOverT _ -> yield centerText messageFontSize "GAME OVER" (windowCenter, 60)
         
         yield onkeydown Keys.Q (fun () -> dispatch (GameOver None))
-        yield onkeydown Keys.A (fun () -> dispatch (DropPiece (Spider, Column.A)))
-        yield onkeydown Keys.B (fun () -> dispatch (DropPiece (Spider, Column.B)))
-        yield onkeydown Keys.C (fun () -> dispatch (DropPiece (Spider, Column.C)))
-        yield onkeydown Keys.D (fun () -> dispatch (DropPiece (Spider, Column.D)))
-        yield onkeydown Keys.E (fun () -> dispatch (DropPiece (Spider, Column.E)))
-        yield onkeydown Keys.F (fun () -> dispatch (DropPiece (Spider, Column.F)))
-        yield onkeydown Keys.G (fun () -> dispatch (DropPiece (Spider, Column.G)))
     ] |> List.append (drawBoard (model.board))
