@@ -26,7 +26,11 @@ let update message model =
 
     | Playing playScreen, PlayScreenMessage msg -> 
         match msg with
-        | PlayScreen.GameOver score -> GameOver (GameOverScreen.init None), Cmd.none
+        | PlayScreen.GameOver winner -> 
+            let winnerString = match winner with 
+                                | Some p -> sprintf "%A" p |> Some
+                                | None _ -> None    
+            GameOver (GameOverScreen.init winnerString), Cmd.none
         | _ -> 
             let newModel, newCommand = PlayScreen.update msg playScreen
             Playing newModel, Cmd.map PlayScreenMessage newCommand

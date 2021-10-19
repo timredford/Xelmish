@@ -105,7 +105,9 @@ let dropPiece (col, piece) model =
         |> List.tryPick (getCellToDropTo) // TODO figure out what to do here
 
     match firstOccupiedCell with
-    | Some c -> {model with board=model.board.Add(c, Some piece)}
+    | Some c -> { model with 
+                    board=model.board.Add(c, Some piece); 
+                    currentTurn=(nextTurn model) }
     | None -> model
 
 type Message = 
@@ -118,7 +120,7 @@ let update message model =
     | DropPiece (player, rank, col)-> 
         let piece  = (player, rank)
         let m = dropPiece (col,piece) model
-        {m with currentTurn=(nextTurn model)}, Cmd.none
+        m, Cmd.none
     | GameOver _ -> model, Cmd.none // caught by parent ???
 
 
@@ -162,4 +164,6 @@ let view model dispatch =
         | GameOverT _ -> yield centerText messageFontSize "GAME OVER" (windowCenter, 60)
         
         yield onkeydown Keys.Q (fun () -> dispatch (GameOver None))
+        yield onkeydown Keys.NumPad1 (fun () -> dispatch (GameOver (Some Player1)))
+        yield onkeydown Keys.NumPad2 (fun () -> dispatch (GameOver (Some Player2)))
     ] |> List.append (drawBoard (model.board))
