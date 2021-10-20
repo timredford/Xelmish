@@ -18,7 +18,7 @@ type Row = | One | Two | Three | Four | Five | Six | Seven
 
 type Cell = { Col: Column; Row: Row }
 
-let plusOne item = item + 1
+let plusOne item = item
 
 let getCoords cell = 
     let colIdx = Column.List |> List.findIndex (fun c -> c = cell.Col) |> plusOne
@@ -27,9 +27,11 @@ let getCoords cell =
 
 type Board = Map<Cell, Piece option>
 
+type GameResult = Player option
+
 type Turn = 
     | Player of Player 
-    | GameOverT of Player option
+    | GameOverT of GameResult
 
 type Model = {
     board : Board
@@ -112,7 +114,71 @@ let dropPiece (col, piece) model =
 
 type Message = 
     | DropPiece of Player * Rank * Column
-    | GameOver of Player option
+    | GameOver of GameResult
+
+
+let getListOfCellOptions numCells nextCell startingCell =
+    let findNextCellFromCell = nextCell (startingCell)
+    let lastNum = numCells - 1
+    [0..lastNum] |> List.map findNextCellFromCell
+
+let connect4 = getListOfCellOptions 4
+
+
+let getNext xModifier yModifier cell i = 
+    let (xCol,yRow) = getCoords cell
+    let col = Column.List |> List.tryItem (xModifier xCol i)
+    let row = Row.List |> List.tryItem (yModifier yRow i)
+    let res = match row, col with
+                | Some r, Some c -> Some {cell with Row=r; Col=c}
+                | _ -> None
+    res
+
+let getNextVertical = getNext (fun x i -> x) (fun y i -> y + i)
+let getNextHorizontal = getNext (fun x i -> x + i) (fun y i -> y )
+let getNextPosDiagonal = getNext (fun x i -> x + i) (fun y i -> y + i )
+let getNextNegDiagonal = getNext (fun x i -> x + i) (fun y i -> y - i )
+
+let getWinner (pieceList: Piece option list) =
+    let distictList = pieceList |> List.distinct 
+    match distictList with
+    | [po] -> match po with
+            | Some (player,_) -> Some player
+            | None -> None
+    | _ -> None
+
+let tryFind (board:Board) (cell:Cell option) =
+    match cell with
+    | Some c -> board.TryFind c |> Option.flatten
+    | None -> None
+
+let checkCellForStartOfConnect (board:Board) (cell:Cell) =
+    let tryFindInBoard = board |> tryFind
+    let directions = [getNextVertical; getNextHorizontal; getNextPosDiagonal; getNextNegDiagonal]
+    let allCellsForEachDirection = directions |> List.map (fun dir -> connect4 dir cell)
+    let allPiecesPerDirection = allCellsForEachDirection |> List.map (fun cells -> cells |> List.map tryFindInBoard )
+    let allWinnersPerDirection = allPiecesPerDirection |> List.map getWinner
+    let allWinners = allWinnersPerDirection |> List.where (fun x -> x.IsSome)
+    let winner = match allWinners with
+                    | [] -> None
+                    | [a] -> a
+                    | _ -> None
+    winner
+
+
+let tryCheckWinner (board:Board) :GameResult option =
+    let checkCellInBoard = checkCellForStartOfConnect board
+    let cellStates = board 
+                    |> Map.toList 
+                    |> List.map (fun (cell, _) -> cell) 
+                    |> List.map checkCellInBoard
+                    |> List.distinct 
+                    |> List.where (fun playerOpt -> playerOpt.IsSome)
+    match cellStates with
+            | [] -> None
+            | [a] -> Some (a)
+            | [a;b] -> Some (None)
+            | _ -> None
 
 
 let update message model =
@@ -120,8 +186,17 @@ let update message model =
     | DropPiece (player, rank, col)-> 
         let piece  = (player, rank)
         let m = dropPiece (col,piece) model
-        m, Cmd.none
+        let gameResult = tryCheckWinner m.board
+        let cmd = match gameResult with
+                    | Some result -> Cmd.ofMsg (GameOver result)
+                    | None -> Cmd.none
+        m, cmd
     | GameOver _ -> model, Cmd.none // caught by parent ???
+
+
+
+
+
 
 
 
@@ -144,6 +219,8 @@ let makeRect (cell , piece) =
 
 let drawBoard board =
     board |> Map.toList |> List.map makeRect
+
+
 
 let view model dispatch =
     let centerText size = text primaryFontName size fontForegroundColor (-0.5, 0.)
