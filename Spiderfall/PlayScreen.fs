@@ -167,6 +167,7 @@ let checkCellForStartOfConnect (board:Board) (cell:Cell) =
 
 
 let tryCheckWinner (board:Board) :GameResult option =
+    let boardIsFull = board |> Map.forall (fun _ p -> p.IsSome)
     let checkCellInBoard = checkCellForStartOfConnect board
     let cellStates = board 
                     |> Map.toList 
@@ -174,11 +175,13 @@ let tryCheckWinner (board:Board) :GameResult option =
                     |> List.map checkCellInBoard
                     |> List.distinct 
                     |> List.where (fun playerOpt -> playerOpt.IsSome)
-    match cellStates with
-            | [] -> None
-            | [a] -> Some (a)
-            | [a;b] -> Some (None)
-            | _ -> None
+    let winner = match cellStates with
+                    | [a] -> Some (a)
+                    | [a;b] -> Some (None)
+                    | _ -> match boardIsFull with 
+                            | true -> Some (None)
+                            | false -> None
+    winner
 
 
 let update message model =
