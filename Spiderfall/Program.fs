@@ -62,7 +62,8 @@ let main _ =
         clearColour = Some backgroundColor // if set to None, then each draw will layer over the previous. which looks weird.
         mouseVisible = true
         assetsToLoad = [
-            PipelineFont (primaryFontName, primaryFontLocation)   
+            PipelineFont (primaryFontName, primaryFontLocation); 
+            FileTexture ("sprites", "./content/sprites.png");
         ]
     }
 

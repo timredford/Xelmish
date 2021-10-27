@@ -200,14 +200,17 @@ let update message model =
 
 
 
-
-
-
 let toColor piece =
     match piece with
     | Some (Player1, Spider) -> Colour.Red
-    | Some (Player2, Spider) -> Colour.DarkSlateGray
+    | Some (Player2, Spider) -> Colour.LightBlue
     | None -> Colour.Tan
+
+let toSprite piece =
+    match piece with
+    | Some (Player1, Spider) -> spritemap.["spider-1"]
+    | Some (Player2, Spider) -> spritemap.["spider-2"]
+    | None -> spritemap.["spider-empty"]
 
 let makeRect (cell , piece) = 
     let (c,r) = getCoords cell
@@ -220,8 +223,22 @@ let makeRect (cell , piece) =
     let color = toColor piece
     colour color s pos
 
+let makeImage (cell, piece) = 
+    let (c,r) = getCoords cell
+    let width = 30
+    let height = 30
+    let y = ( Row.List.Length - r ) * height
+    let x = c * width
+    let pos = (x,y)
+    let s = (width, height) 
+    let color = toColor piece
+    let playerSprite = toSprite piece
+    sprite playerSprite s pos color
+   
+
+
 let drawBoard board =
-    board |> Map.toList |> List.map makeRect
+    board |> Map.toList |> List.map makeImage
 
 
 
