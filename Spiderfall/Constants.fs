@@ -10,9 +10,26 @@ let primaryFontLocation = "./content/Connection"
 let headerFontSize = 50.
 let messageFontSize = 25.
 let labelFontSize = 10.
+let buttonFontSize = 20.
 
 let windowWidth = 700
-let windowHeight = 300
+let windowHeight = 400
+
+let windowCenter = windowWidth / 2
+let currentPlayerSpriteToken_x = windowCenter + 100
+
+let cell_width = 30
+let cell_height = 30
+let board_width = cell_width * 7
+
+let boardOffsetX = (windowWidth - board_width) / 2
+let boardOffsetY = 80
+
+let sprite_width = cell_width
+let sprite_heigth = cell_height
+
+let buttonRowHeight = 30
+let buttonRowPosition = boardOffsetY
 
 
 

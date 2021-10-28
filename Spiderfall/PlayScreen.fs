@@ -13,8 +13,8 @@ type Piece = Player * Rank
 
 type Column = | A | B | C | D | E | F | G  
     with static member List = [A;B;C;D;E;F;G;]
-type Row = | One | Two | Three | Four | Five | Six | Seven 
-    with static member List = [One; Two; Three; Four; Five; Six; Seven] 
+type Row = | One | Two | Three | Four | Five | Six  
+    with static member List = [One; Two; Three; Four; Five; Six;] 
 
 type Cell = { Col: Column; Row: Row }
 
@@ -49,8 +49,7 @@ let createBoard:Board =
     |> Map
 
 let createAllPlayer1GameBoard =
-    Map (   (createRow Seven    [Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);]) @
-            (createRow Six      [Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);]) @
+    Map (   (createRow Six      [Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);]) @
             (createRow Five     [Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);]) @
             (createRow Four     [Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);]) @
             (createRow Three    [Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);]) @
@@ -58,8 +57,7 @@ let createAllPlayer1GameBoard =
             (createRow One      [Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);    Some (Player1, Spider);      Some (Player1, Spider);]) )
 
 let createCheckeredGameBoard =
-    Map (   (createRow Seven    [Some (Player2, Spider);    Some (Player1, Spider);      Some (Player2, Spider);    Some (Player1, Spider);      Some (Player2, Spider);    Some (Player1, Spider);      Some (Player2, Spider);]) @
-            (createRow Six      [Some (Player1, Spider);    Some (Player2, Spider);      Some (Player1, Spider);    Some (Player2, Spider);      Some (Player1, Spider);    Some (Player2, Spider);      Some (Player1, Spider);]) @
+    Map (   (createRow Six      [Some (Player1, Spider);    Some (Player2, Spider);      Some (Player1, Spider);    Some (Player2, Spider);      Some (Player1, Spider);    Some (Player2, Spider);      Some (Player1, Spider);]) @
             (createRow Five     [Some (Player2, Spider);    None;                        Some (Player2, Spider);    Some (Player1, Spider);      Some (Player2, Spider);    Some (Player1, Spider);      Some (Player2, Spider);]) @
             (createRow Four     [Some (Player1, Spider);    Some (Player2, Spider);      Some (Player1, Spider);    Some (Player2, Spider);      Some (Player1, Spider);    Some (Player2, Spider);      Some (Player1, Spider);]) @
             (createRow Three    [Some (Player2, Spider);    Some (Player1, Spider);      Some (Player2, Spider);    Some (Player1, Spider);      Some (Player2, Spider);    Some (Player1, Spider);      Some (Player2, Spider);]) @
@@ -78,6 +76,16 @@ let getPlayerName p =
     match p with
     | Player1 -> "Player 1"
     | Player2 -> "Player 2"
+
+let getColumnName c =
+    match c with 
+    | A -> "A"
+    | B -> "B"
+    | C -> "C"
+    | D -> "D"
+    | E -> "E"
+    | F -> "F"
+    | G -> "G"
 
 let init () = { 
     board = createBoard
@@ -212,6 +220,16 @@ let toSprite piece =
     | Some (Player2, Spider) -> spritemap.["spider-2"]
     | None -> spritemap.["spider-empty"]
 
+let playerToSprite player =
+    match player with
+    | Player1 -> spritemap.["spider-1"]
+    | Player2 -> spritemap.["spider-2"]
+
+let playerToColor player = 
+    match player with 
+    | Player1 -> Colour.Red
+    | Player2 -> Colour.LightBlue
+
 let makeRect (cell , piece) = 
     let (c,r) = getCoords cell
     let width = 20
@@ -225,32 +243,49 @@ let makeRect (cell , piece) =
 
 let makeImage (cell, piece) = 
     let (c,r) = getCoords cell
-    let width = 30
-    let height = 30
-    let y = ( Row.List.Length - r ) * height
-    let x = c * width
+    let y = ( Row.List.Length - r ) * cell_height + boardOffsetY
+    let x = c * cell_width + boardOffsetX
     let pos = (x,y)
-    let s = (width, height) 
+    let s = (sprite_width, sprite_heigth) 
     let color = toColor piece
     let playerSprite = toSprite piece
-    sprite playerSprite s pos color
+    sprite playerSprite (sprite_width, sprite_heigth) pos color
    
-
+let drawButton dispatch player rank (i,column) =
+    let columnName = getColumnName column
+    let margin = 5
+    let x = i * cell_width + boardOffsetX + margin
+    let pos = (x, buttonRowPosition)
+    let fontSize = buttonFontSize
+    let event = fun() -> dispatch (DropPiece (player, rank, column))
+    let size = (cell_width - ( 2 * margin), buttonRowHeight)
+    [
+        colour Colour.Blue size pos
+        text primaryFontName fontSize Colour.Tan (-0.5,0.) columnName (x + (cell_width / 2) - (int fontSize / 4) ,buttonRowPosition + (buttonRowHeight * 3 / 7))
+        onclick event size pos
+    ]
 
 let drawBoard board =
     board |> Map.toList |> List.map makeImage
 
 
 
+let drawSpiderButtons dispatch player =
+    let rank = Rank.Spider
+    let drawPlayerButton = drawButton dispatch player rank
+    Column.List |> List.indexed |> List.map drawPlayerButton |> List.concat
+
 let view model dispatch =
     let centerText size = text primaryFontName size fontForegroundColor (-0.5, 0.)
     
-    let windowCenter = windowWidth / 2
     [
-        yield centerText messageFontSize "You're (P)laying!" (windowCenter, 40)
+        yield centerText messageFontSize "Current Player:" (windowCenter, 40)
+        
         match model.currentTurn with
         | Player player -> 
             yield centerText messageFontSize (getPlayerName player) (windowCenter, 60)
+            yield sprite (playerToSprite player) (sprite_width, sprite_heigth) (currentPlayerSpriteToken_x,40) (playerToColor player)
+            yield! drawSpiderButtons dispatch player
             yield onkeydown Keys.A (fun () -> dispatch (DropPiece (player, Spider, Column.A)))
             yield onkeydown Keys.B (fun () -> dispatch (DropPiece (player, Spider, Column.B)))
             yield onkeydown Keys.C (fun () -> dispatch (DropPiece (player, Spider, Column.C)))
@@ -263,4 +298,4 @@ let view model dispatch =
         yield onkeydown Keys.Q (fun () -> dispatch (GameOver None))
         yield onkeydown Keys.NumPad1 (fun () -> dispatch (GameOver (Some Player1)))
         yield onkeydown Keys.NumPad2 (fun () -> dispatch (GameOver (Some Player2)))
-    ] |> List.append (drawBoard (model.board))
+    ] |> List.append (drawBoard (model.board)) 
