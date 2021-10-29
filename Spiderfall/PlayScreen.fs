@@ -71,6 +71,11 @@ let nextTurn model =
         | Player1 -> Player Player2
         | Player2 -> Player Player1
     | GameOverT _ -> model.currentTurn // no change
+
+let nextPlayer player =
+    match player with 
+    | Player1 -> Player2
+    | Player2 -> Player1
     
 let getPlayerName p = 
     match p with
@@ -293,9 +298,9 @@ let view model dispatch =
             yield onkeydown Keys.E (fun () -> dispatch (DropPiece (player, Spider, Column.E)))
             yield onkeydown Keys.F (fun () -> dispatch (DropPiece (player, Spider, Column.F)))
             yield onkeydown Keys.G (fun () -> dispatch (DropPiece (player, Spider, Column.G)))
+            yield onkeydown Keys.Q (fun () -> dispatch (GameOver (Some (nextPlayer player))))
         | GameOverT _ -> yield centerText messageFontSize "GAME OVER" (windowCenter, 60)
         
-        yield onkeydown Keys.Q (fun () -> dispatch (GameOver None))
         yield onkeydown Keys.NumPad1 (fun () -> dispatch (GameOver (Some Player1)))
         yield onkeydown Keys.NumPad2 (fun () -> dispatch (GameOver (Some Player2)))
     ] |> List.append (drawBoard (model.board)) 

@@ -1,8 +1,9 @@
 ﻿module Constants
 open Xelmish.Model
+open Xelmish.Viewables
 
-let fontForegroundColor = Colour.Black
-let backgroundColor = Colour.WhiteSmoke
+let fontForegroundColor = Colour.Gray
+let backgroundColor = Colour.Black
 
 let primaryFontName = "connection"
 let primaryFontLocation = "./content/Connection"
@@ -31,7 +32,15 @@ let sprite_heigth = cell_height
 let buttonRowHeight = 30
 let buttonRowPosition = boardOffsetY
 
+let button s event background foreground (width, height) (x, y) fontsize = 
+    [
+        colour background (width, height) (x, y)
+        text primaryFontName fontsize foreground (-0.5, -0.5) s (x + width/2, y+height/2)
+        onclick event (width, height) (x, y)
+    ]
 
+let grayButton s event (width, height) (x, y) fontsize = 
+    button s event Colour.Gray Colour.White (width, height) (x,y) fontsize
 
 let spritemap = 
     System.IO.File.ReadAllLines "./content/spritemap.txt"
