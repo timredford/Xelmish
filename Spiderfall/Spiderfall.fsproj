@@ -13,7 +13,6 @@
 
 	<ItemGroup>
 		<MonoGameContentReference Include="**\*.mgcb" />
-		<None Include="readme.md" />
 		<Compile Include="Constants.fs" />
 		<Compile Include="StartScreen.fs" />
 		<Compile Include="PlayScreen.fs" />
