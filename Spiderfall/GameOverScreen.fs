@@ -30,8 +30,8 @@ let view model dispatch =
         yield! grayButton "Play Again" (fun () -> dispatch Reset) (100, 50) (windowCenter - 50, 140) 20. 
         yield! grayButton "Quit" exit (100, 50) (windowCenter - 50, 200) 20. 
         //yield onclick exit (100, 50) (textMid - 50, 140)
-        yield text messageFontSize "(Q)uit" (windowCenter, 165)
 
         yield onkeydown Keys.P (fun () -> dispatch Reset)
         yield onkeydown Keys.Q exit
+        yield onkeydown Keys.Escape exit
     ]

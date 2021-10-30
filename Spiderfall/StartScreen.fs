@@ -16,7 +16,7 @@ let init () =
 type Message = 
     | StartGame
 
-let instructions = "Welcome to Spiderfall. \nThis is a local 2 player game.\nSpiderfall is Connect4 but with spiders.\nTake turns dropping spiders into the columns by clicking on the buttons above the board.\nFirst player to connect 4 in a row wins.\nConnections can be made horizontally, vertically and diagonally."
+let instructions = "Welcome to Spiderfall. \nThis is a local 2 player game.\nSpiderfall is Connect4 but with spiders.\nTake turns dropping spiders into the columns by clicking on the buttons above the board.\nFirst player to connect 4 in a row wins.\nConnections can be made horizontally, vertically or diagonally."
 
 let view model dispatch = 
     let centerText size = text primaryFontName size fontForegroundColor (-0.5, 0.)

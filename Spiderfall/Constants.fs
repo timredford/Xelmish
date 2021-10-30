@@ -2,7 +2,7 @@
 open Xelmish.Model
 open Xelmish.Viewables
 
-let fontForegroundColor = Colour.Gray
+let fontForegroundColor = Colour.LightGray
 let backgroundColor = Colour.Black
 
 let primaryFontName = "connection"

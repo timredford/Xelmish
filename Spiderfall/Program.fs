@@ -68,6 +68,6 @@ let main _ =
     }
 
     Program.mkProgram init update view // standard, out of the box Elmish initialisation
-    |> Program.withConsoleTrace // standard, out of the box Elmish console tracing.
+    //|> Program.withConsoleTrace // standard, out of the box Elmish console tracing.
     |> Xelmish.Program.runGameLoop config // Xelmish specific run function
     0

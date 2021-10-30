@@ -280,6 +280,8 @@ let drawSpiderButtons dispatch player =
     let drawPlayerButton = drawButton dispatch player rank
     Column.List |> List.indexed |> List.map drawPlayerButton |> List.concat
 
+let instructions = "Match 4 spiders of a color in a row. \nClick the buttons over each column to drop a spider in that column.\nPress 'q' to forfeit"
+
 let view model dispatch =
     let centerText size = text primaryFontName size fontForegroundColor (-0.5, 0.)
     
@@ -300,7 +302,7 @@ let view model dispatch =
             yield onkeydown Keys.G (fun () -> dispatch (DropPiece (player, Spider, Column.G)))
             yield onkeydown Keys.Q (fun () -> dispatch (GameOver (Some (nextPlayer player))))
         | GameOverT _ -> yield centerText messageFontSize "GAME OVER" (windowCenter, 60)
+
+        yield centerText 50. instructions (windowCenter, 300)
         
-        yield onkeydown Keys.NumPad1 (fun () -> dispatch (GameOver (Some Player1)))
-        yield onkeydown Keys.NumPad2 (fun () -> dispatch (GameOver (Some Player2)))
     ] |> List.append (drawBoard (model.board)) 
